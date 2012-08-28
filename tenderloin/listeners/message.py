@@ -26,7 +26,7 @@ class MessageListener(object):
 
         if d["type"] == "register":
             self.register_plugin(name=d["plugin"], id=d["id"])
-        elif d["type"] == "data":
+        elif d["type"] == "data" and len(d["data"]) > 0:
             self.update_data(plugin=d["plugin"], payload=d["data"])
 
     def update_data(self, plugin, payload):
