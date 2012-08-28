@@ -22,11 +22,21 @@ class WebHandler(tornado.web.RequestHandler):
         return formatted
 
     def get(self):
-        if len(plugin_data):
+        plugin = self.request.uri.split("/", 1)[1]
+        response = {}
+
+        if plugin:
+            if len(plugin_data.get(plugin, {})) > 0:
+                response = plugin_data[plugin]
+        else:
+            response = plugin_data
+
+        if len(response) > 0:
             self.set_status(200)
             self.add_header("Content-type", "text/plain")
             self.write("\n".join(self.to_path(plugin_data)) + "\n")
-
+        else:
+            self.set_status(404)
 
 class WebListener(object):
     def __init__(self, address = "127.0.0.1", port = 50000):
