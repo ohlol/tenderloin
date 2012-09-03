@@ -3,40 +3,40 @@ import tornado.web
 
 from tenderloin.listeners import plugin_data
 
-def logger():
-    return tornado.web.Application.log
-
 
 class WebHandler(tornado.web.RequestHandler):
-    def to_path(self, metrics):
-        formatted = []
-
-        def helper(data, path, formatted):
-            for key, val in data.iteritems():
-                if isinstance(val,  dict):
-                    helper(val, "".join((path, key)), formatted)
+    def to_path(self, metrics, prefix=""):
+        if isinstance(metrics, dict):
+            for k, v in metrics.iteritems():
+                if prefix:
+                    real_prefix = ".".join((prefix, k))
                 else:
-                    formatted.append("%s %s" % (".".join((path, key.replace(".","_"))), val))
+                    real_prefix = k
 
-        helper(metrics, "", formatted)
-        return formatted
+                for line in self.to_path(v, real_prefix):
+                    yield line
+        elif isinstance(metrics, list):
+            yield " ".join((prefix, ",".join(metrics)))
+        else:
+            yield " ".join((prefix, str(metrics)))
 
     def get(self):
         plugin = self.request.uri.split("/", 1)[1]
         response = {}
 
-        if plugin:
-            if len(plugin_data.get(plugin, {})) > 0:
-                response = plugin_data[plugin]
+        if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
+            response = plugin_data[plugin]
         else:
             response = plugin_data
 
         if len(response) > 0:
             self.set_status(200)
             self.add_header("Content-type", "text/plain")
-            self.write("\n".join(self.to_path(plugin_data)) + "\n")
+            for path in self.to_path(plugin_data):
+                self.write(path + "\n")
         else:
             self.set_status(404)
+
 
 class WebListener(object):
     def __init__(self, address = "127.0.0.1", port = 50000):
