@@ -29,7 +29,7 @@ class TenderloinPlugin(object):
             yield metrics
 
     def __setitem__(self, key, value):
-        f = lambda x: x.replace(".", "_")
+        f = lambda x: x.replace(".", "_").replace(" ", "_")
         self._metrics[f(key)] = self._sanitize_keys(f, value)
 
     def __getitem__(self, key):
