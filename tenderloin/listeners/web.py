@@ -25,14 +25,14 @@ class WebHandler(tornado.web.RequestHandler):
         response = {}
 
         if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
-            response = plugin_data[plugin]
+            response = {plugin: plugin_data[plugin]}
         else:
             response = plugin_data
 
         if len(response) > 0:
             self.set_status(200)
             self.add_header("Content-type", "text/plain")
-            for path in self.to_path(plugin_data):
+            for path in self.to_path(response):
                 self.write(path + "\n")
         else:
             self.set_status(404)
