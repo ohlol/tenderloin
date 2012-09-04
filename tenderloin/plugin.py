@@ -39,7 +39,10 @@ class TenderloinPlugin(object):
         if isinstance(data, dict):
             for k, v in data.iteritems():
                 del data[k]
-                data[func(k)] = self._sanitize_keys(func, v)
+                if isinstance(v, dict):
+                    data[func(k)] = self._sanitize_keys(func, v)
+                else:
+                    data[func(k)] = v
             return data
         elif isinstance(data, str):
             return func(data)
