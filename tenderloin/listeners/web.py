@@ -16,7 +16,7 @@ class WebHandler(tornado.web.RequestHandler):
                 for line in self.to_path(v, real_prefix):
                     yield line
         elif isinstance(metrics, list):
-            yield " ".join((prefix, ",".join(metrics)))
+            yield " ".join((prefix, ",".join([repr(m) for m in metrics])))
         else:
             yield " ".join((prefix, str(metrics)))
 
