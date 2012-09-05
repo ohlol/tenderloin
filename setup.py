@@ -21,7 +21,7 @@ setup(name='tenderloin',
   packages=find_packages(),
   include_package_data=True,
   zip_safe=False,
-  install_requires=['setuptools'],
+  install_requires=['pyzmq', 'setuptools'],
   entry_points={
     'console_scripts': [
       'tl = tenderloin.cli:server',
