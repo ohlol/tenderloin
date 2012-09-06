@@ -25,24 +25,30 @@ class MessageListener(object):
         d = json.loads(message[0])
 
         if d["type"] == "register":
-            self.register_plugin(name=d["plugin"], id=d["id"])
+            self.register_plugin(plugin_id=d["id"])
         elif d["type"] == "data" and len(d["data"]) > 0:
-            self.update_data(plugin=d["plugin"], payload=d["data"])
+            self.update_data(plugin_id=d["id"], payload=d["data"])
 
-    def update_data(self, plugin, payload):
+    def update_data(self, plugin_id, payload):
         payload["received_at"] = int(time.time())
-        plugin_data[plugin] = payload
+        (plugin_name, fqdn) = plugin_id.split("%", 1)
+
+        if plugin_name in plugin_data and fqdn in plugin_data[plugin_name]:
+            plugin_data[plugin_name][fqdn] = payload
 
     def consumer_loop(self):
         self.stream.on_recv(self.handle)
 
-    def register_plugin(self, name, id):
+    def register_plugin(self, plugin_id):
         global PLUGIN_TIMEOUT
 
-        if name in plugin_data:
-            now = time.time()
+        now = time.time()
+        (plugin_name, fqdn) = plugin_id.split("%", 1)
+        if plugin_name in plugin_data and fqdn in plugin_data[plugin_name]:
             plugin_expiry_time = now - PLUGIN_TIMEOUT
-            if "received_at" in plugin_data[name] and plugin_data[name]["received_at"] < plugin_expiry_time:
-                logging.debug("Re-registering plugin due to expiry: %s@%d" % (name, now))
-            else:
-                logging.debug("Registering plugin: %s@%d" % (name, now))
+            if "received_at" in plugin_data[plugin_name][fqdn] and plugin_data[plugin_name][fqdn]["received_at"] < plugin_expiry_time:
+                logging.info("Re-registering plugin due to expiry: %s@%d" % (repr(plugin_id), now))
+        else:
+            logging.info("Registering plugin: %s@%d" % (repr(plugin_id), now))
+            plugin_data.setdefault(plugin_name, {})
+            plugin_data[plugin_name][fqdn] = {}

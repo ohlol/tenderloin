@@ -21,13 +21,20 @@ class WebHandler(tornado.web.RequestHandler):
             yield " ".join((prefix, str(metrics)))
 
     def get(self):
-        plugin = self.request.uri.split("/", 1)[1]
+        plugin = self.request.path.lstrip("/")
+        fqdn = self.get_argument("fqdn", default=None)
         response = {}
 
         if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
-            response = {plugin: plugin_data[plugin]}
+            if fqdn:
+                if fqdn in plugin_data[plugin]:
+                    response = {".".join(reversed(fqdn.split("."))): {plugin: plugin_data[plugin][fqdn]}}
+            else:
+                response = {".".join(reversed(f.split("."))): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
         else:
-            response = plugin_data
+            # {plugin: {fqdn: data}} -> {fqdn: {plugin: data}}
+            # ... with fqdn reversed on periods.
+            response = {".".join(reversed(f.split("."))): {p: plugin_data[p][f]} for p in plugin_data for f in plugin_data[p]}
 
         if len(response) > 0:
             self.set_status(200)

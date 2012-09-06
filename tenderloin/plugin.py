@@ -1,11 +1,9 @@
 import ConfigParser
 import json
 import os
+import socket
 import time
 import zmq
-
-from random import randint
-from uuid import uuid4
 
 COLLECTOR_HOST = "127.0.0.1"
 COLLECTOR_PORT = 49999
@@ -19,8 +17,8 @@ class TenderloinPlugin(object):
         self.name = name
         self.interval = interval
         self.config = self._parse_config(os.path.join(CONFIG_PATH, "%s.ini" % self.name))
-        self.worker_socket = self._get_worker_socket(collector_host, collector_port)
-        self.id = str(uuid4())
+        self._worker_socket = self._get_worker_socket(collector_host, collector_port)
+        self.id = "%s%%%s" % (self.name, socket.getfqdn())
         self._metrics = {}
         self.register()
 
@@ -74,7 +72,7 @@ class TenderloinPlugin(object):
         raise NotImplementedError()
 
     def register(self):
-        self.worker_socket.send(json.dumps(dict(type="register", plugin=self.name, id=self.id)))
+        self._worker_socket.send(json.dumps(dict(type="register", id=self.id)))
 
     def loop(self):
         while True:
@@ -86,4 +84,4 @@ class TenderloinPlugin(object):
             time.sleep(self.interval)
 
     def send_msg(self, msg):
-        self.worker_socket.send(json.dumps(dict(type="data", plugin=self.name, data=msg)))
+        self._worker_socket.send(json.dumps(dict(type="data", id=self.id, data=msg)))
