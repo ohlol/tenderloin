@@ -25,12 +25,13 @@ class WebHandler(tornado.web.RequestHandler):
         fqdn = self.get_argument("fqdn", default=None)
         response = {}
 
-        if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
-            if fqdn:
-                if fqdn in plugin_data[plugin]:
-                    response = {".".join(reversed(fqdn.split("."))): {plugin: plugin_data[plugin][fqdn]}}
-            else:
-                response = {".".join(reversed(f.split("."))): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
+        if plugin:
+            if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
+                if fqdn:
+                    if fqdn in plugin_data[plugin]:
+                        response = {".".join(reversed(fqdn.split("."))): {plugin: plugin_data[plugin][fqdn]}}
+                else:
+                    response = {".".join(reversed(f.split("."))): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
         else:
             # {plugin: {fqdn: data}} -> {fqdn: {plugin: data}}
             # ... with fqdn reversed on periods.
