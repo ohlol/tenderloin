@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import logging
 import tornado.web
 
@@ -23,7 +25,7 @@ class WebHandler(tornado.web.RequestHandler):
     def get(self):
         plugin = self.request.path.lstrip("/")
         fqdn = self.get_argument("fqdn", default=None)
-        response = {}
+        response = defaultdict(dict)
 
         if plugin:
             if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
@@ -35,7 +37,10 @@ class WebHandler(tornado.web.RequestHandler):
         else:
             # {plugin: {fqdn: data}} -> {fqdn: {plugin: data}}
             # ... with fqdn reversed on periods.
-            response = {".".join(reversed(f.split("."))): {p: plugin_data[p][f]} for p in plugin_data for f in plugin_data[p]}
+            for plugin in plugin_data:
+                for fqdn in plugin_data[plugin]:
+                    reversed_fqdn = ".".join(reversed(fqdn.split(".")))
+                    response[reversed_fqdn][plugin] = plugin_data[plugin][fqdn]
 
         if len(response) > 0:
             self.set_status(200)
