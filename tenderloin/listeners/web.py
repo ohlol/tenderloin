@@ -42,7 +42,7 @@ class WebHandler(tornado.web.RequestHandler):
             # ... with fqdn reversed on periods.
             for plugin in plugin_data:
                 if fqdn:
-                    if plugin_data[plugin].get(fqdn, {}):
+                    if fqdn in plugin_data[plugin]:
                         response[self.format_fqdn(fqdn)][plugin] = plugin_data[plugin][fqdn]
                 else:
                     for fqdn in plugin_data[plugin]:
