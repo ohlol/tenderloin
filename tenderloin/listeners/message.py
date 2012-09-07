@@ -50,5 +50,4 @@ class MessageListener(object):
                 logging.info("Re-registering plugin due to expiry: %s@%d" % (repr(plugin_id), now))
         else:
             logging.info("Registering plugin: %s@%d" % (repr(plugin_id), now))
-            plugin_data.setdefault(plugin_name, {})
             plugin_data[plugin_name][fqdn] = {}
