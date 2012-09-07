@@ -6,11 +6,10 @@ import tornado.web
 from tenderloin.listeners import plugin_data
 
 
-def format_fqdn(fqdn):
-    return ".".join(reversed(fqdn.split(".")))
-
-
 class WebHandler(tornado.web.RequestHandler):
+    def format_fqdn(fqdn):
+        return ".".join(reversed(fqdn.split(".")))
+
     def to_path(self, metrics, prefix=""):
         if isinstance(metrics, dict):
             for k, v in metrics.iteritems():
