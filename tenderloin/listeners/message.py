@@ -51,8 +51,9 @@ class MessageListener(object):
         registered = self.registered(plugin_id)
 
         if registered:
-            if registered == uuid and self.expired(plugin_id):
-                logging.info("Re-registering plugin due to expiry: %s@%d" % (repr(plugin_id), now))
+            if registered == uuid:
+                if  self.expired(plugin_id):
+                    logging.info("Re-registering plugin due to expiry: %s@%d" % (repr(plugin_id), now))
             else:
                 logging.info("Plugin registration collision: %s@%d [registered=%s]" % (repr(plugin_id), now, registered))
         else:
