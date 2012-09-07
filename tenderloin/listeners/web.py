@@ -1,7 +1,7 @@
-from collections import defaultdict
-
 import logging
 import tornado.web
+
+from collections import defaultdict
 
 from tenderloin.listeners import plugin_data
 

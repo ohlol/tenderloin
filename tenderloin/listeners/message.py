@@ -1,9 +1,9 @@
-from zmq.eventloop import zmqstream
-
 import json
 import logging
 import time
 import zmq
+
+from zmq.eventloop import zmqstream
 
 from tenderloin.listeners import plugin_data
 
