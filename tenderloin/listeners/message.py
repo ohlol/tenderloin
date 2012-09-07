@@ -38,7 +38,8 @@ class MessageListener(object):
             logging.debug("Updating plugin: %s@%d" % (repr(plugin_id), now))
             plugin_data[plugin_name][fqdn]["data"] = payload
         else:
-            logging.info("Ignoring plugin data due to registration collision: %s" % repr(plugin_id))
+            logging.info("Ignoring plugin data due to registration collision: %s" %
+                         repr(plugin_id))
 
     def consumer_loop(self):
         self.stream.on_recv(self.handle)
@@ -53,9 +54,12 @@ class MessageListener(object):
         if registered:
             if registered == uuid:
                 if  self.expired(plugin_id):
-                    logging.info("Re-registering plugin due to expiry: %s@%d" % (repr(plugin_id), now))
+                    logging.info("Re-registering plugin due to expiry: %s@%d" %
+                                 (repr(plugin_id), now))
             else:
-                logging.info("Plugin registration collision: %s@%d [registered=%s]" % (repr(plugin_id), now, registered))
+                logging.info("Plugin registration collision: %s@%d "
+                             "[registered=%s]" %
+                             (repr(plugin_id), now, registered))
         else:
             logging.info("Registering plugin: %s@%d" % (repr(plugin_id), now))
             plugin_data[plugin_name] = defaultdict(dict)

@@ -32,7 +32,8 @@ class WebHandler(tornado.web.RequestHandler):
 
         if plugin:
             if fqdn:
-                if plugin_data.get(plugin, {}).get(fqdn, {}):
+                if plugin_data.get(plugin, {})\
+                              .get(fqdn, {}):
                     response = {self.format_fqdn(fqdn): {plugin: plugin_data[plugin][fqdn]}}
             else:
                 response = {self.format_fqdn(f): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
@@ -57,7 +58,7 @@ class WebHandler(tornado.web.RequestHandler):
 
 
 class WebListener(object):
-    def __init__(self, address = "127.0.0.1", port = 50000):
+    def __init__(self, address="127.0.0.1", port=50000):
         self.address = address
         self.port = port
         self.application = tornado.web.Application([
@@ -65,5 +66,6 @@ class WebListener(object):
         ])
 
     def start(self):
-        logging.info("Starting up web listener on %s:%d" % (self.address, self.port))
+        logging.info("Starting up web listener on %s:%d" %
+                     (self.address, self.port))
         self.application.listen(self.port, self.address)

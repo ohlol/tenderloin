@@ -13,14 +13,17 @@ CONFIG_PATH = "/etc/tenderloin"
 
 
 class TenderloinPlugin(object):
-    def __init__(self, name, interval=60, collector_host=COLLECTOR_HOST, collector_port=COLLECTOR_PORT):
+    def __init__(self, name, interval=60, collector_host=COLLECTOR_HOST,
+                 collector_port=COLLECTOR_PORT):
         global COLLECTOR_HOST, COLLECTOR_PORT, CONFIG_PATH
 
         self.name = name
         self.interval = interval
-        self.config = self._parse_config(os.path.join(CONFIG_PATH, "%s.ini" % self.name))
+        self.config = self._parse_config(os.path.join(CONFIG_PATH, "%s.ini" %
+                                                      self.name))
         self.whoami = (self.name, str(uuid4()), socket.getfqdn())
-        self._worker_socket = self._get_worker_socket(collector_host, collector_port)
+        self._worker_socket = self._get_worker_socket(collector_host,
+                                                      collector_port)
         self._metrics = {}
 
     def __iter__(self):
@@ -76,10 +79,11 @@ class TenderloinPlugin(object):
         while True:
             payload = {}
             self.get_data()
-            for x,y in self:
+            for x, y in self:
                 payload[x] = y
             self.send_msg(payload)
             time.sleep(self.interval)
 
     def send_msg(self, msg):
-        self._worker_socket.send(json.dumps(dict(plugin_id=self.whoami, data=msg)))
+        self._worker_socket.send(json.dumps(dict(plugin_id=self.whoami,
+                                                 data=msg)))

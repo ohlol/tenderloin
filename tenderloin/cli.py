@@ -8,4 +8,5 @@ def server():
     define("listen_port", default=50000, help="Web server listen port")
 
     parse_command_line()
-    server = Server(options.listen_address, options.listen_port-1, options.listen_port)
+    server = Server(options.listen_address, options.listen_port - 1,
+                    options.listen_port)
