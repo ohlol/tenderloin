@@ -3,6 +3,7 @@ import logging
 import time
 import zmq
 
+from collections import defaultdict
 from zmq.eventloop import zmqstream
 
 from tenderloin.listeners import plugin_data
@@ -21,20 +22,23 @@ class MessageListener(object):
         self.stream = zmqstream.ZMQStream(socket)
 
     def handle(self, message):
-        logging.debug("Received message: %s", repr(message))
         d = json.loads(message[0])
 
-        if d["type"] == "register":
-            self.register_plugin(plugin_id=d["id"])
-        elif d["type"] == "data" and len(d["data"]) > 0:
-            self.update_data(plugin_id=d["id"], payload=d["data"])
+        if d["data"]:
+            self.update_data(plugin_id=d["plugin_id"], payload=d["data"])
 
     def update_data(self, plugin_id, payload):
-        payload["received_at"] = int(time.time())
-        (plugin_name, fqdn) = plugin_id.split("%", 1)
+        (plugin_name, uuid, fqdn) = plugin_id
+        now = int(time.time())
+        payload["received_at"] = now
 
-        if plugin_name in plugin_data and fqdn in plugin_data[plugin_name]:
-            plugin_data[plugin_name][fqdn] = payload
+        self.register_plugin(plugin_id)
+
+        if self.registered(plugin_id) == uuid:
+            logging.debug("Updating plugin: %s@%d" % (repr(plugin_id), now))
+            plugin_data[plugin_name][fqdn]["data"] = payload
+        else:
+            logging.info("Ignoring plugin data due to registration collision: %s" % repr(plugin_id))
 
     def consumer_loop(self):
         self.stream.on_recv(self.handle)
@@ -42,12 +46,24 @@ class MessageListener(object):
     def register_plugin(self, plugin_id):
         global PLUGIN_TIMEOUT
 
+        (plugin_name, uuid, fqdn) = plugin_id
         now = time.time()
-        (plugin_name, fqdn) = plugin_id.split("%", 1)
-        if plugin_name in plugin_data and fqdn in plugin_data[plugin_name]:
-            plugin_expiry_time = now - PLUGIN_TIMEOUT
-            if "received_at" in plugin_data[plugin_name][fqdn] and plugin_data[plugin_name][fqdn]["received_at"] < plugin_expiry_time:
+        registered = self.registered(plugin_id)
+
+        if registered:
+            if registered == uuid and self.expired(plugin_id):
                 logging.info("Re-registering plugin due to expiry: %s@%d" % (repr(plugin_id), now))
+            else:
+                logging.info("Plugin registration collision: %s@%d [registered=%s]" % (repr(plugin_id), now, registered))
         else:
             logging.info("Registering plugin: %s@%d" % (repr(plugin_id), now))
-            plugin_data[plugin_name][fqdn] = {}
+            plugin_data[plugin_name] = defaultdict(dict)
+            plugin_data[plugin_name][fqdn]["uuid"] = uuid
+
+    def expired(self, plugin_id):
+        (plugin_name, uuid, fqdn) = plugin_id
+        return plugin_data.get(plugin_name, {}).get(fqdn, {}).get("data", {}).get("received_at", 0) < time.time() - PLUGIN_TIMEOUT
+
+    def registered(self, plugin_id):
+        (plugin_name, uuid, fqdn) = plugin_id
+        return plugin_data.get(plugin_name, {}).get(fqdn, {}).get("uuid", None)

@@ -48,7 +48,7 @@ class WebHandler(tornado.web.RequestHandler):
                     for fqdn in plugin_data[plugin]:
                         response[self.format_fqdn(fqdn)][plugin] = plugin_data[plugin][fqdn]
 
-        if len(response) > 0:
+        if response:
             self.set_status(200)
             self.add_header("Content-type", "text/plain")
             for path in self.to_path(response):
