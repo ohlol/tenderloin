@@ -63,8 +63,13 @@ class MessageListener(object):
 
     def expired(self, plugin_id):
         (plugin_name, uuid, fqdn) = plugin_id
-        return plugin_data.get(plugin_name, {}).get(fqdn, {}).get("data", {}).get("received_at", 0) < time.time() - PLUGIN_TIMEOUT
+        return plugin_data.get(plugin_name, {})\
+                          .get(fqdn, {})\
+                          .get("data", {})\
+                          .get("received_at", 0) < time.time() - PLUGIN_TIMEOUT
 
     def registered(self, plugin_id):
         (plugin_name, uuid, fqdn) = plugin_id
-        return plugin_data.get(plugin_name, {}).get(fqdn, {}).get("uuid", None)
+        return plugin_data.get(plugin_name, {})\
+                          .get(fqdn, {})\
+                          .get("uuid", None)
