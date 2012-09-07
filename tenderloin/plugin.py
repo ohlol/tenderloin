@@ -82,4 +82,4 @@ class TenderloinPlugin(object):
             time.sleep(self.interval)
 
     def send_msg(self, msg):
-        self._worker_socket.send(json.dumps(dict(type="data", plugin_id=self.whoami, data=msg)))
+        self._worker_socket.send(json.dumps(dict(plugin_id=self.whoami, data=msg)))
