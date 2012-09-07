@@ -6,6 +6,10 @@ import tornado.web
 from tenderloin.listeners import plugin_data
 
 
+def format_fqdn(fqdn):
+    return ".".join(reversed(fqdn.split(".")))
+
+
 class WebHandler(tornado.web.RequestHandler):
     def to_path(self, metrics, prefix=""):
         if isinstance(metrics, dict):
@@ -31,16 +35,19 @@ class WebHandler(tornado.web.RequestHandler):
             if plugin in plugin_data and plugin_data.get(plugin, {}) > 0:
                 if fqdn:
                     if fqdn in plugin_data[plugin]:
-                        response = {".".join(reversed(fqdn.split("."))): {plugin: plugin_data[plugin][fqdn]}}
+                        response = {format_fqdn(fqdn): {plugin: plugin_data[plugin][fqdn]}}
                 else:
-                    response = {".".join(reversed(f.split("."))): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
+                    response = {format_fqdn(f): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
         else:
             # {plugin: {fqdn: data}} -> {fqdn: {plugin: data}}
             # ... with fqdn reversed on periods.
             for plugin in plugin_data:
-                for fqdn in plugin_data[plugin]:
-                    reversed_fqdn = ".".join(reversed(fqdn.split(".")))
-                    response[reversed_fqdn][plugin] = plugin_data[plugin][fqdn]
+                if fqdn:
+                    if fqdn in plugin_data[plugin]:
+                        response[format_fqdn(fqdn)][plugin] = plugin_data[plugin][fqdn]
+                else:
+                    for fqdn in plugin_data[plugin]:
+                        response[format_fqdn(fqdn)][plugin] = plugin_data[plugin][fqdn]
 
         if len(response) > 0:
             self.set_status(200)
