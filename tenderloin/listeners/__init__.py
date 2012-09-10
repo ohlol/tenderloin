@@ -1,3 +1,3 @@
 from collections import defaultdict
 
-plugin_data = defaultdict(dict)
+plugin_data = []

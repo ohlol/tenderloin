@@ -1,7 +1,6 @@
+import itertools
 import logging
 import tornado.web
-
-from collections import defaultdict
 
 from tenderloin.listeners import plugin_data
 
@@ -25,28 +24,18 @@ class WebHandler(tornado.web.RequestHandler):
         else:
             yield " ".join((prefix, str(metrics)))
 
-    def get(self):
-        plugin = self.request.path.lstrip("/")
-        fqdn = self.get_argument("fqdn", default=None)
-        response = defaultdict(dict)
+    def filter_by_tags(self, tags):
+        return itertools.ifilter(lambda x: set(tags) < set(x.tags),
+                                 plugin_data)
 
-        if plugin:
-            if fqdn:
-                if plugin_data.get(plugin, {})\
-                              .get(fqdn, {}):
-                    response = {self.format_fqdn(fqdn): {plugin: plugin_data[plugin][fqdn]}}
-            else:
-                response = {self.format_fqdn(f): {plugin: plugin_data[plugin][f]} for f in plugin_data[plugin]}
-        else:
-            # {plugin: {fqdn: data}} -> {fqdn: {plugin: data}}
-            # ... with fqdn reversed on periods.
-            for plugin in plugin_data:
-                if fqdn:
-                    if fqdn in plugin_data[plugin]:
-                        response[self.format_fqdn(fqdn)][plugin] = plugin_data[plugin][fqdn]
-                else:
-                    for fqdn in plugin_data[plugin]:
-                        response[self.format_fqdn(fqdn)][plugin] = plugin_data[plugin][fqdn]
+    def get(self):
+        tags = [t for t in self.get_argument("tags", default="").split(",") if t]
+        response = {}
+
+        for plugin in self.filter_by_tags(tags):
+            response[self.format_fqdn(plugin.fqdn)] = {
+                plugin.name: plugin.data
+            }
 
         if response:
             self.set_status(200)

@@ -10,11 +10,12 @@ from uuid import uuid4
 COLLECTOR_HOST = "127.0.0.1"
 COLLECTOR_PORT = 49999
 CONFIG_PATH = "/etc/tenderloin"
+DEFAULT_TAGS = []
 
 
 class TenderloinPlugin(object):
     def __init__(self, name, interval=60, collector_host=COLLECTOR_HOST,
-                 collector_port=COLLECTOR_PORT):
+                 collector_port=COLLECTOR_PORT, tags=DEFAULT_TAGS):
         global COLLECTOR_HOST, COLLECTOR_PORT, CONFIG_PATH
 
         self.name = name
@@ -22,6 +23,7 @@ class TenderloinPlugin(object):
         self.config = self._parse_config(os.path.join(CONFIG_PATH, "%s.ini" %
                                                       self.name))
         self.whoami = (self.name, str(uuid4()), socket.getfqdn())
+        self.tags = set(tags) | set([self.whoami[0], self.whoami[2]])
         self._worker_socket = self._get_worker_socket(collector_host,
                                                       collector_port)
         self._metrics = {}
@@ -86,4 +88,5 @@ class TenderloinPlugin(object):
 
     def send_msg(self, msg):
         self._worker_socket.send(json.dumps(dict(plugin_id=self.whoami,
+                                                 tags=list(self.tags),
                                                  data=msg)))
