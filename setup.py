@@ -22,10 +22,11 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['pyzmq', 'setuptools'],
+    install_requires=['pyzmq', 'requests', 'setuptools'],
     entry_points={
         'console_scripts': [
             'tl = tenderloin.cli:server',
+            'tc = tenderloin.cli:collector'
         ],
     }
 )
