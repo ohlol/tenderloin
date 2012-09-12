@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Tenderloin</title>
+    <title>Installing Tenderloin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="Scott Smith <scott@ohlol.net>">
@@ -13,16 +13,6 @@
       body {
         padding-top: 60px;
         padding-bottom: 40px;
-      }
-      .hero-unit {
-        border: 1px solid #CCC;
-        background-color: #FFF2E5;
-        padding-top: 10px;
-        padding-bottom: 10px;
-      }
-      .whats-next-row {
-        padding-top: 50px;
-        padding-bottom: 20px;
       }
     </style>
     <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
@@ -51,7 +41,7 @@
           <a class="brand" href="index.html">Tenderloin</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="index.html">Home</a></li>
+              <li><a href="index.html">Home</a></li>
               <li><a href="docs.html">Documentation</a></li>
               <li><a href="alerting.html">Alerting</a></li>
               <li><a href="api.html">API</a></li>
@@ -64,73 +54,55 @@
 
     <div class="container">
 
-      <div class="hero-unit">
-        <h1>Use <span class="muted">Tenderloin</span></h1>
-        <p>to collect and display data about system metrics. You
-          can <strong>view</strong> or <strong>process</strong>
-          the data with any standard HTTP client or library (curl,
-          urllib2, Net::HTTP, etc.), <strong>receive alerts</strong>,
-          and <strong>graph timeseries-based data</strong>. It's a
-          snap to set up and you can <strong>write plugins</strong> in
-          the language of your choice.</p>
-        <p><a class="btn btn-primary btn-large btn-primary"
-        href="install.html">Install now
-        &raquo;</a></p>
+      <h1>Installing <span class="muted">Tenderloin</span></h1>
+      <p>Tenderloin is written in Python. It uses ZeroMQ as a message
+        bus interface for plugins and Tornado to serve HTTP
+        requests. It is recommended to install the latest versions of
+        both, but those distributed with your operating system are
+        most likely sufficient.</p>
+      <p>With that said, let's get moving!</p>
+
+      <h2><small>Choose your OS...</small></h2>
+      <ul>
+        <li><a href="#ubuntu">Ubuntu</a></li>
+        <li><a href="#redhat">Red Hat</a></li>
+      </ul>
+
+      <h2><small>...then <a href="#plugins">install some plugins</a></small></h2>
+
+      <h3 id="ubuntu">Ubuntu installation</h3>
+      <div class="alert alert-block">
+        <h4>Head's up!</h4>
+        <p>As of Ubuntu 12.04 (Precise
+          Pengolin), both PyZMQ and Tornado packages work as shipped.
+          You should not need to compile/install from source unless you
+          so desire.</p>
+      </div>
+      <h4>Step one: <small>Install pre-requisites</small></h4>
+      <pre class="prettyprint">% sudo apt-get install libzmq1 python-requests python-setuptools python-tornado python-zmq</pre>
+      <h4>Step two: <small>Choose one of:</small></h4>
+      <strong>Binary install</strong>
+      <pre class="prettyprint">% wget http://ohlol.github.com/tenderloin-0.0.1_all.deb
+% sudo dpkg -i tenderloin-0.0.1_all.deb</pre>
+      <strong>Source install</strong>
+      <pre class="prettyprint">% sudo apt-get install python-pip
+% sudo pip install tenderloin</pre>
+      <h4>Step three: <small>Start the server</small></h4>
+      <pre class="prettyprint">% tl
+[I 120912 06:46:13 message:29] Starting up message listener on 127.0.0.1:49999
+[I 120912 06:46:13 web:59] Starting up web listener on 127.0.0.1:50000</pre>
+      <h4>Next steps: <small><a href="#plugins">Install</a> or <a href="api.html">write</a> some plugins</small></h4>
+
+      <h3 id="redhat">Red Hat installation</h3>
+      <div class="alert alert-error alert-block">
+        <h4>Whoops!</h4>
+        <p>We still need to write these instructions. =(</p>
       </div>
 
-      <div class="row">
-        <div class="span4">
-          <h2>View and process</h2>
-          <ul class="thumbnails">
-            <li class="span4">
-              <div class="thumbnail">
-                <img src="assets/img/tl-output-1.png" alt>
-              </div>
-            </li>
-          </ul>
-          <p>Tenderloin data is exposed via HTTP in (space-delimited)
-            key/value format. It can be easily processed and used as
-            input by any tool of your choice.</p>
-          <p><a class="btn" href="#">View docs &raquo;</a></p>
-        </div>
-        <div class="span4">
-          <h2>Send alerts</h2>
-          <pre class="prettyprint">% ./check_tl.py --help
-Usage: check_tl.py [options]
-
-Options:
-  -h, --help show this help message and exit
-  -H HOST    Tenderloin host [localhost]
-  -p PORT    Tenderloin port [50000]
-...
-[snip]</pre>
-          <p>Using tenderloin output in your alerting system is
-          trivial.
-          A <a href="https://github.com/ohlol/tenderloin/blob/master/scripts/check_tl.py">check
-          script</a> that works with both Nagios and Sensu is included.</p>
-          <p><a class="btn" href="#">Alerting &raquo;</a></p>
-       </div>
-        <div class="span4">
-          <h2>Store anything</h2>
-          <ul class="thumbnails">
-            <li class="span4">
-              <div class="thumbnail">
-                <img src="assets/img/tl-output-2.png" alt>
-              </div>
-            </li>
-          </ul>
-          <p>Keys are simple dictionaries (aka hashes) and their
-          values will be cast to strings. More complex types
-          (primarily lists) will be represented as strings as well.</p>
-          <p><a class="btn" href="#">API &raquo;</a></p>
-        </div>
-      </div>
-
-      <div class="row whats-next-row">
-        <div class="span4 offset4">
-          <a class="btn btn-large btn-block btn-success"
-          href="next.html">What's next?</a>
-        </div>
+      <h3 id="plugins">Installing plugins</h3>
+      <div class="alert alert-error alert-block">
+        <h4>Whoops!</h4>
+        <p>We still need to write these instructions. =(</p>
       </div>
 
       <hr>
