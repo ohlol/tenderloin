@@ -15,8 +15,11 @@
         padding-top: 60px;
         padding-bottom: 40px;
       }
-      pre.code {
-      font-size: .72em;
+      .hero-unit {
+        border: 1px solid #CCC;
+        background-color: #FFF2E5;
+        padding-top: 10px;
+        padding-bottom: 10px;
       }
     </style>
     <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
@@ -58,7 +61,6 @@
 
     <div class="container">
 
-      <!-- Main hero unit for a primary marketing message or call to action -->
       <div class="hero-unit">
         <h1>Use Tenderloin</h1>
         <p>to collect and display data about system metrics. You
@@ -68,12 +70,11 @@
           and <strong>graph timeseries-based data</strong>. It's a
           snap to set up and you can <strong>write plugins</strong> in
           the language of your choice.</p>
-        <p><a class="btn btn-primary btn-large"
+        <p><a class="btn btn-primary btn-large btn-primary"
         href="https://github.com/ohlol/tenderloin">Download now
         &raquo;</a></p>
       </div>
 
-      <!-- Example row of columns -->
       <div class="row">
         <div class="span4">
           <h2>View and process</h2>
@@ -90,7 +91,7 @@
           <p><a class="btn" href="#">View docs &raquo;</a></p>
         </div>
         <div class="span4">
-          <h2>Receive alerts</h2>
+          <h2>Send alerts</h2>
           <pre class="prettyprint">% ./check_tl.py --help
 Usage: check_tl.py [options]
 
@@ -119,6 +120,14 @@ Options:
           values will be cast to strings. More complex types
           (primarily lists) will be represented as strings as well.</p>
           <p><a class="btn" href="#">API &raquo;</a></p>
+        </div>
+      </div>
+
+      <p />
+      <div class="row">
+        <div class="span4 offset4">
+          <button class="btn btn-large btn-block btn-warning"
+          type="button">Find out more (click here)!</button>
         </div>
       </div>
 
