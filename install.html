@@ -76,15 +76,15 @@
       <div class="alert alert-block">
         <h4>Head's up!</h4>
         <p>Ubuntu 12.04 LTS (Precise Pengolin) provides both Tornado,
-          ZeroMQ and PyZMQ. If you are running an older release, you'll
-          probably need to install them manually. Those steps are out of the
-          scope of this document.</p>
+          ZeroMQ and PyZMQ. <strong>If you are running an older
+          release</strong>, you'll probably need to install them
+          manually. Those steps are out of the scope of this document.</p>
       </div>
       <h4>Step one: <small>Install pre-requisites</small></h4>
       <pre class="prettyprint">% sudo apt-get install libzmq1 python-requests python-setuptools python-tornado python-zmq</pre>
       <h4>Step two: <small>Choose one of:</small></h4>
       <strong>Binary install</strong>
-      <pre class="prettyprint">% wget http://ohlol.github.com/tenderloin-0.0.1_all.deb
+      <pre class="prettyprint">% wget http://ohlol.github.com/tenderloin/tenderloin-0.0.1_all.deb
 % sudo dpkg -i tenderloin-0.0.1_all.deb</pre>
       <strong>Source install</strong>
       <pre class="prettyprint">% sudo apt-get install python-pip
