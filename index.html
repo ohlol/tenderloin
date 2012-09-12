@@ -60,11 +60,10 @@
         <p>to collect and display data about system metrics. You
           can <strong>view</strong> or <strong>process</strong>
           the data with any standard HTTP client or library (curl,
-          urllib2, Net::HTTP, etc.), <strong>receive
-            alerts</strong>, and <strong>graph timeseries-based
-            data</strong>. It's a snap to set up and you
-          can <strong>write plugins</strong> in the language of
-          your choosing.</p>
+          urllib2, Net::HTTP, etc.), <strong>receive alerts</strong>,
+          and <strong>graph timeseries-based data</strong>. It's a
+          snap to set up and you can <strong>write plugins</strong> in
+          the language of your choice.</p>
         <p><a class="btn btn-primary btn-large"
         href="https://github.com/ohlol/tenderloin">Download now
         &raquo;</a></p>
@@ -73,31 +72,31 @@
       <!-- Example row of columns -->
       <div class="row">
         <div class="span4">
+          <h2>View and process</h2>
           <ul class="thumbnails">
             <li class="span4">
               <div class="thumbnail">
                 <img src="assets/img/tl-output-1.png" alt>
-                <div class="caption">
-                  <h3>View and Process</h3>
-                  <p>Tenderloin data is served via HTTP in key/value format
-                    and can be easily processed and used as input by any tool of
-                    your choice.</p>
-                  <p><a class="btn" href="#">More &raquo;</a></p>
-                </div>
               </div>
             </li>
           </ul>
+          <p>Tenderloin data is exposed via HTTP in (space-delimited)
+            key/value format. It can be easily processed and used as
+            input by any tool of your choice.</p>
+          <p><a class="btn" href="#">More &raquo;</a></p>
         </div>
         <div class="span4">
           <h2>Receive alerts</h2>
-          <p>Because the output is so easily grockable, using it for
-          input in your alerting system is a snap. A check script that
-          works with both Nagios and Sensu is included.
+          <p>Using tenderloin output in your alerting system is
+          trivial. A check script that works with both Nagios and
+          Sensu is included.
           <p><a class="btn" href="#">View details &raquo;</a></p>
        </div>
         <div class="span4">
-          <h2>Heading</h2>
-          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+          <h2>Store anything</h2>
+          <p>Keys are simple dictionaries (aka hashes) and their
+          values will be cast to strings. More complex types
+          (primarily lists) will be represented as strings as well.</p>
           <p><a class="btn" href="#">View details &raquo;</a></p>
         </div>
       </div>
