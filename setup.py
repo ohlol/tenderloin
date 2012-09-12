@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['pyzmq', 'requests', 'setuptools'],
+    install_requires=['pyzmq', 'requests', 'setuptools', 'tornado'],
     entry_points={
         'console_scripts': [
             'tl = tenderloin.cli:server',
