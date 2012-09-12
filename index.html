@@ -9,10 +9,14 @@
 
     <!-- Le styles -->
     <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/prettify.css" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 60px;
         padding-bottom: 40px;
+      }
+      pre.code {
+      font-size: .72em;
       }
     </style>
     <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
@@ -30,8 +34,7 @@
     <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">
   </head>
 
-  <body>
-
+  <body onload="prettyPrint()">
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -44,8 +47,9 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">Install</a></li>
-              <li><a href="#contact">API</a></li>
+              <li><a href="install.html">Install</a></li>
+              <li><a href="alerting.html">Alerting</a></li>
+              <li><a href="api.html">API</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -83,28 +87,45 @@
           <p>Tenderloin data is exposed via HTTP in (space-delimited)
             key/value format. It can be easily processed and used as
             input by any tool of your choice.</p>
-          <p><a class="btn" href="#">More &raquo;</a></p>
+          <p><a class="btn" href="#">View docs &raquo;</a></p>
         </div>
         <div class="span4">
           <h2>Receive alerts</h2>
+          <pre class="prettyprint">% ./check_tl.py --help
+Usage: check_tl.py [options]
+
+Options:
+  -h, --help show this help message and exit
+  -H HOST    Tenderloin host [localhost]
+  -p PORT    Tenderloin port [50000]
+...
+[snip]</pre>
           <p>Using tenderloin output in your alerting system is
-          trivial. A check script that works with both Nagios and
-          Sensu is included.
-          <p><a class="btn" href="#">View details &raquo;</a></p>
+          trivial.
+          A <a href="https://github.com/ohlol/tenderloin/blob/master/scripts/check_tl.py">check
+          script</a> that works with both Nagios and Sensu is included.</p>
+          <p><a class="btn" href="#">Alerting &raquo;</a></p>
        </div>
         <div class="span4">
           <h2>Store anything</h2>
+          <ul class="thumbnails">
+            <li class="span4">
+              <div class="thumbnail">
+                <img src="assets/img/tl-output-2.png" alt>
+              </div>
+            </li>
+          </ul>
           <p>Keys are simple dictionaries (aka hashes) and their
           values will be cast to strings. More complex types
           (primarily lists) will be represented as strings as well.</p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
+          <p><a class="btn" href="#">API &raquo;</a></p>
         </div>
       </div>
 
       <hr>
 
       <footer>
-        <p>&copy; Company 2012</p>
+        <p>&copy; Scott Smith 2012</p>
       </footer>
 
     </div> <!-- /container -->
@@ -125,6 +146,7 @@
     <script src="assets/js/bootstrap-collapse.js"></script>
     <script src="assets/js/bootstrap-carousel.js"></script>
     <script src="assets/js/bootstrap-typeahead.js"></script>
+    <script src="assets/js/prettify.js"></script>
 
   </body>
 </html>
