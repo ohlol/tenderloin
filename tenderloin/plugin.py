@@ -29,7 +29,7 @@ class TenderloinPlugin(object):
         self._metrics = {}
 
     def __iter__(self):
-        for metrics in self._metrics.iteritems():
+        for metrics in self._metrics.items():
             yield metrics
 
     def __setitem__(self, key, value):
@@ -41,7 +41,7 @@ class TenderloinPlugin(object):
 
     def _sanitize_keys(self, func, data):
         if isinstance(data, dict):
-            for k, v in data.iteritems():
+            for k, v in data.items():
                 del data[k]
                 if isinstance(v, dict):
                     data[func(k)] = self._sanitize_keys(func, v)

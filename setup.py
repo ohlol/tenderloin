@@ -12,7 +12,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: BSD',
+        'License :: OSI Approved :: BSD License',
         'Topic :: System :: Networking :: Monitoring'
     ],
     keywords='',
@@ -25,6 +25,7 @@ setup(
     install_requires=['pyzmq', 'requests', 'setuptools', 'tornado'],
     entry_points={
         'console_scripts': [
+            'check_tl = tenderloin.cli:checker',
             'tl = tenderloin.cli:server',
             'tc = tenderloin.cli:collector'
         ],

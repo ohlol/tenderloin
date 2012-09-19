@@ -31,7 +31,7 @@ class Carbon(object):
 
     def _send(self, data):
         try:
-            for metric, datapoints in data.iteritems():
+            for metric, datapoints in data.items():
                 for dp in datapoints:
                     logging.debug("Sending: %s %s %s" % (metric, dp[1], dp[0]))
                     self.sock.sendall("%s %s %s\n" % (metric, dp[1], dp[0]))
