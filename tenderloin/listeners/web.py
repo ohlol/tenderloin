@@ -2,6 +2,8 @@ import itertools
 import logging
 import tornado.web
 
+from collections import defaultdict
+
 from tenderloin.listeners import plugin_data
 
 
@@ -11,7 +13,7 @@ class WebHandler(tornado.web.RequestHandler):
 
     def to_path(self, metrics, prefix=""):
         if isinstance(metrics, dict):
-            for k, v in metrics.iteritems():
+            for k, v in metrics.items():
                 if prefix:
                     real_prefix = ".".join((prefix, k))
                 else:
@@ -30,17 +32,17 @@ class WebHandler(tornado.web.RequestHandler):
 
     def get(self):
         tags = [t for t in self.get_argument("tags", default="").split(",") if t]
-        response = {}
+        response = defaultdict(dict)
 
         for plugin in self.filter_by_tags(tags):
-            response[self.format_fqdn(plugin.fqdn)] = {
+            response[self.format_fqdn(plugin.fqdn)].update({
                 plugin.name: plugin.data
-            }
+            })
 
         if response:
             self.set_status(200)
             self.add_header("Content-type", "text/plain")
-            for path in self.to_path(response):
+            for path in sorted(self.to_path(response)):
                 self.write(path + "\n")
         else:
             self.set_status(404)
