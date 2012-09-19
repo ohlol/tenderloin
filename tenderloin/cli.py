@@ -1,8 +1,6 @@
 import sys
-import urllib2
 
 from tornado.options import define, options, parse_command_line, print_help
-from urllib import urlencode
 
 from tenderloin.backend import Carbon
 from tenderloin.server import Server
@@ -20,6 +18,7 @@ def coerce_float(s):
         return float(s)
     except (TypeError, ValueError):
         return s
+
 
 def server():
     define("listen_address", default="127.0.0.1", help="Bind to address")
@@ -86,6 +85,7 @@ def collector():
 
 def checker():
     import json
+    import logging
     import re
 
     define("tenderloin_address", default="127.0.0.1", group="check_tl",
@@ -107,6 +107,8 @@ def checker():
 
     parse_command_line()
 
+    # hackety-hack to turn off logging
+    logging.getLogger().setLevel(logging.FATAL)
     real_warning = coerce_float(options.warn)
     real_critical = coerce_float(options.crit)
 
