@@ -23,7 +23,7 @@ class Carbon(object):
             sock.connect((self.host, self.port))
         except socket.error:
             logging.info("Unable to connect to carbon, retrying in %d seconds" %
-                        waittime)
+                         waittime)
             time.sleep(waittime)
             self.connect(waittime + 5)
 

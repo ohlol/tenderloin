@@ -40,8 +40,10 @@ def collector():
     define("graphite_port", default=2003, group="tc", help="Graphite port")
     define("tenderloin_address", default="127.0.0.1", group="tc",
            help="Tenderloin address")
-    define("tenderloin_port", default=50000, group="tc", help="Tenderloin port")
-    define("interval", default=60, group="tc", help="Tenderloin query interval")
+    define("tenderloin_port", default=50000, group="tc",
+           help="Tenderloin port")
+    define("interval", default=60, group="tc",
+           help="Tenderloin query interval")
     define("noop", default=False, group="tc",
            help="Don't actually send to Graphite")
     define("prefix", default="tl", help="Graphite prefix")
@@ -136,7 +138,6 @@ def checker():
         print_help()
         sys.exit(NAGIOS_STATUSES["UNKNOWN"])
 
-
     tl = Tenderloin(options.tenderloin_address, options.tenderloin_port)
     output = tl.get_data(options.plugin)
     check_output = {}
@@ -161,7 +162,7 @@ def checker():
                 elif options.over:
                     if mval > real_critical:
                         check_status = "CRITICAL"
-                    elif real_critical  and mval > real_warning:
+                    elif real_critical and mval > real_warning:
                         check_status = "WARNING"
                     else:
                         check_status = "OK"
@@ -187,9 +188,9 @@ def checker():
         print "UNKNOWN: Metric doesn't exist: %s" % options.metric
         sys.exit(NAGIOS_STATUSES["UNKNOWN"])
 
-    critical_statuses = sum([x for x in [v["CRITICAL"] for k,v in check_output.items()] if x], [])
-    warning_statuses = sum([x for x in [v["WARNING"] for k,v in check_output.items()] if x], [])
-    ok_statuses = sum([x for x in [v["OK"] for k,v in check_output.items()] if x], [])
+    critical_statuses = sum([x for x in [v["CRITICAL"] for k, v in check_output.items()] if x], [])
+    warning_statuses = sum([x for x in [v["WARNING"] for k, v in check_output.items()] if x], [])
+    ok_statuses = sum([x for x in [v["OK"] for k, v in check_output.items()] if x], [])
 
     if critical_statuses:
         print "\n".join([st for st in critical_statuses])
