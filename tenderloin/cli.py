@@ -224,4 +224,4 @@ class Tenderloin(object):
         except:
             return None
 
-        return {k: v for k, v in [line.split(" ", 1) for line in r.content.strip("\n").splitlines()]}
+        return dict((k, v) for k, v in [line.split(" ", 1) for line in r.content.strip("\n").splitlines()])
