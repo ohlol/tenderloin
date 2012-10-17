@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['pyzmq', 'requests', 'setuptools', 'tornado'],
+    install_requires=['requests', 'setuptools', 'tornado'],
     entry_points={
         'console_scripts': [
             'check_tl = tenderloin.cli:checker',
