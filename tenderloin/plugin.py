@@ -32,7 +32,7 @@ class TenderloinPlugin(object):
         self.config = self._parse_config(os.path.join(CONFIG_PATH, "%s.ini" %
                                                       self.name))
         self.tenderloin_url = "http://%s:%s/_send" % (options.tenderloin_address,
-                                                options.tenderloin_port)
+                                                      options.tenderloin_port)
         self.interval = options.interval
         self.whoami = (self.name, str(uuid4()), options.hostname)
         self.tags = set(tags) | set([self.whoami[0], self.whoami[2]])
