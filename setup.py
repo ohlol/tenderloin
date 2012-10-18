@@ -27,7 +27,7 @@ setup(
         'console_scripts': [
             'check_tl = tenderloin.cli:checker',
             'tl = tenderloin.cli:server',
-            'tc = tenderloin.cli:collector'
+            'tco = tenderloin.cli:collector'
         ],
     }
 )
