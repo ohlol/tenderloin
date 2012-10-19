@@ -153,7 +153,7 @@ def checker():
                 if options.match:
                     for mx in options.match:
                         p2 = re.compile(mx)
-                        if p2.match(mval):
+                        if p2.match(str(mval)):
                             check_status = "OK"
                             break
                         else:
