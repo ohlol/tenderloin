@@ -7,7 +7,7 @@ from collections import defaultdict
 
 class Carbon(object):
     def __init__(self, host, port):
-        self.data = {}
+        self.data = []
         self.host = host
         self.port = port
 
@@ -31,31 +31,18 @@ class Carbon(object):
 
     def _send(self, data):
         try:
-            for metric, datapoints in data.items():
-                for dp in datapoints:
-                    logging.debug("Sending: %s %s %s" % (metric, dp[1], dp[0]))
-                    self.sock.sendall("%s %s %s\n" % (metric, dp[1], dp[0]))
+            for metric in data:
+                logging.debug("Sending %s" % metric)
+            self.sock.sendall("\n".join(data))
         except socket.error:
             raise
 
     def send(self):
         buf_sz = 500
-        to_send = defaultdict(list)
+        to_send = []
 
-        for metric in self.data.keys():
-            while len(self.data[metric]) > 0:
-                l = len(to_send)
-                if l < buf_sz:
-                    to_send[metric].append(self.data[metric].pop())
-                else:
-                    try:
-                        self._send(to_send)
-                    except socket.error:
-                        logging.error("Error sending to carbon, trying to reconnect.")
-                        self.sock = self.connect()
-
-                        for entry in to_send:
-                            self.data[entry[0]].append(entry[1])
+        while len(to_send) < buf_sz and self.data:
+            to_send.append(self.data.pop())
 
         try:
             self._send(to_send)
@@ -63,5 +50,5 @@ class Carbon(object):
             logging.error("Error sending to carbon, trying to reconnect.")
             self.sock = self.connect()
 
-        for entry in to_send:
-            self.data[entry[0]].append(entry[1])
+            for metric in to_send:
+                self.data.append(metric)

@@ -49,7 +49,6 @@ def collector():
 
     parse_command_line()
 
-    data = {}
     carbon = Carbon(options.graphite_address, options.graphite_port)
 
     while True:
@@ -68,13 +67,13 @@ def collector():
         for line in r.content.strip("\n").splitlines():
             (key, val) = line.split(" ", 1)
             key = '.'.join((options.prefix, key))
-            data.setdefault(key, [])
+            m_str = "%s %s %s" % (key, coerce_float(val), now)
+            logging.debug("Buffering %s" % m_str)
+            carbon.data.append(m_str)
 
+        if not options.noop:
             try:
-                data[key].append((now, coerce_float(val)))
-                if not options.noop:
-                    carbon.data = data
-                    carbon.send()
+                carbon.send()
             except:
                 pass
 
