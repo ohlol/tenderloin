@@ -34,18 +34,18 @@ def collector():
     import sys
     import time
 
-    define("graphite_address", default="127.0.0.1", group="tc",
+    define("graphite_address", default="127.0.0.1", group="tco",
            help="Graphite host")
-    define("graphite_port", default=2003, group="tc", help="Graphite port")
-    define("tenderloin_address", default="127.0.0.1", group="tc",
+    define("graphite_port", default=2003, group="tco", help="Graphite port")
+    define("tenderloin_address", default="127.0.0.1", group="tco",
            help="Tenderloin address")
-    define("tenderloin_port", default=50000, group="tc",
+    define("tenderloin_port", default=50000, group="tco",
            help="Tenderloin port")
-    define("interval", default=60, group="tc",
+    define("interval", default=60, group="tco",
            help="Tenderloin query interval")
-    define("noop", default=False, group="tc",
+    define("noop", default=False, group="tco",
            help="Don't actually send to Graphite")
-    define("prefix", default="tl", help="Graphite prefix")
+    define("prefix", default="tl", group="tco", help="Graphite prefix")
 
     parse_command_line()
 
