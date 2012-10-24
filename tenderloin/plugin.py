@@ -38,6 +38,9 @@ class TenderloinPlugin(object):
         self.tags = set(tags) | set([self.whoami[0], self.whoami[2]])
         self._metrics = {}
 
+    def __contains__(self, metric):
+        return metric in self._metrics
+
     def __iter__(self):
         for metrics in self._metrics.items():
             yield metrics
