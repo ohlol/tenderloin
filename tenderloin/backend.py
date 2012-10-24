@@ -31,24 +31,27 @@ class Carbon(object):
 
     def _send(self, data):
         try:
+            logging.info("Sending %d total metrics to carbon" % len(data))
+
             for metric in data:
                 logging.debug("Sending %s" % metric)
             self.sock.sendall("\n".join(data))
         except socket.error:
-            raise
+            logging.error("Error sending to carbon, trying to reconnect.")
+
+            self.sock = self.connect()
+            while len(data):
+                self.data.append(data.pop())
 
     def send(self):
         buf_sz = 500
         to_send = []
 
-        while len(to_send) < buf_sz and self.data:
-            to_send.append(self.data.pop())
+        while self.data:
+            if len(to_send) < buf_sz:
+                to_send.append(self.data.pop())
+            else:
+                self._send(to_send)
+                to_send = []
 
-        try:
-            self._send(to_send)
-        except socket.error:
-            logging.error("Error sending to carbon, trying to reconnect.")
-            self.sock = self.connect()
-
-            for metric in to_send:
-                self.data.append(metric)
+        self._send(to_send)
