@@ -8,7 +8,7 @@ import tornado.web
 from collections import defaultdict
 
 
-PLUGIN_DATA = []
+PLUGIN_DATA = {}
 
 
 class Listener(object):
@@ -55,8 +55,8 @@ class MessageHandler(tornado.web.RequestHandler):
         payload["received_at"] = now
 
         logging.debug("Updating plugin: %s@%d" % (repr(plugin_id), now))
-        PLUGIN_DATA.append(PluginData(name=plugin_name, uuid=uuid,
-                                      fqdn=fqdn, tags=tags, data=payload))
+        PLUGIN_DATA[plugin_name] = PluginData(name=plugin_name, uuid=uuid,
+                                      fqdn=fqdn, tags=tags, data=payload)
 
 
 class WebHandler(tornado.web.RequestHandler):
@@ -80,7 +80,7 @@ class WebHandler(tornado.web.RequestHandler):
 
     def filter_by_tags(self, tags):
         return itertools.ifilter(lambda x: set(tags) < set(x.tags),
-                                 PLUGIN_DATA)
+                                 PLUGIN_DATA.values())
 
     def get(self):
         tags = [t for t in self.get_argument("tags", default="").split(",") if t]
