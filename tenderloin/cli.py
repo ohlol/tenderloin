@@ -60,22 +60,22 @@ def collector():
             r = requests.get(tl_url, params=dict(tags="graphite"),
                              timeout=options.interval)
             r.raise_for_status()
+
+            for line in r.content.strip("\n").splitlines():
+                (key, val) = line.split(" ", 1)
+                key = '.'.join((options.prefix, key))
+                m_str = "%s %s %s" % (key, coerce_float(val), now)
+                logging.debug("Buffering %s" % m_str)
+                carbon.data.append(m_str)
+
+                if not options.noop:
+                    try:
+                        carbon.send()
+                    except:
+                        pass
         except:
             logging.error("Got bad response code from tenderloin: %s" %
                           sys.exc_info()[1])
-
-        for line in r.content.strip("\n").splitlines():
-            (key, val) = line.split(" ", 1)
-            key = '.'.join((options.prefix, key))
-            m_str = "%s %s %s" % (key, coerce_float(val), now)
-            logging.debug("Buffering %s" % m_str)
-            carbon.data.append(m_str)
-
-        if not options.noop:
-            try:
-                carbon.send()
-            except:
-                pass
 
         sleep_time = options.interval - (int(time.time()) - now)
         if sleep_time > 0:
