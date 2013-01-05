@@ -12,8 +12,8 @@ import (
 )
 
 type Plugin struct {
-	name string
 	data MetricsMap
+	name string
 	tags Set
 }
 
