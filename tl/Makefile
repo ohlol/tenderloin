@@ -1,4 +1,5 @@
 GOFILES= \
+	metrics.go \
 	server.go \
 	web.go
 TARGET = tl

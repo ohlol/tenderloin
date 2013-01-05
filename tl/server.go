@@ -21,8 +21,8 @@ func main() {
 	}
 
 	tenderloinWeb := new(TenderloinWebServer)
-	err = tenderloinWeb.RunServer(opts.ListenAddr)
 
+	err = tenderloinWeb.RunServer(opts.ListenAddr)
 	if err != nil {
 		log.Fatal("Could not bind to specified address and/or port")
 	}
