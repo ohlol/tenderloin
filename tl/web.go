@@ -112,7 +112,6 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	//paths := MetricsData.ToPath(fqdn)
 
 	if len(paths) > 0 {
 		sort.Strings(paths)
