@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type MetricsMap map[string]interface {}
+type MetricsMap map[string]interface{}
 
 type Metrics interface {
 	ToPath()
@@ -26,9 +26,9 @@ type Plugin struct {
 
 type Set []string
 
-type TenderloinWebServer struct {}
+type TenderloinWebServer struct{}
 
-var MetricsData = map[string] Plugin{}
+var MetricsData = map[string]Plugin{}
 
 func Log(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +39,7 @@ func Log(handler http.Handler) http.Handler {
 
 func filterByTags(tags Set) []Plugin {
 	plugins := []Plugin{}
-	
+
 	for _, m := range MetricsData {
 		if t := tags.Subset(m.tags); len(t) > 0 {
 			plugins = append(plugins, m)
@@ -61,7 +61,7 @@ func formatFqdn() string {
 func messageHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		data MetricsMap
-		err error
+		err  error
 		tags Set
 	)
 
@@ -72,7 +72,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 	data["received_at"] = fmt.Sprintf("%d", time.Now().Unix())
 
 	if err == nil {
-		MetricsData[pluginName] = Plugin{name:pluginName, data:data, tags:tags}
+		MetricsData[pluginName] = Plugin{name: pluginName, data: data, tags: tags}
 	}
 }
 
@@ -96,7 +96,7 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 	if len(tagsParam) > 0 {
 		tags = strings.Split(tagsParam, ",")
 	}
-	
+
 	if len(tags) > 0 {
 		if filtered := filterByTags(tags); len(filtered) > 0 {
 			for _, plugin := range filtered {
@@ -138,7 +138,7 @@ func (mMap *MetricsMap) ToPath(prefix string) []string {
 			}
 		case reflect.Slice:
 			slc := []string{}
-			for _, d := range v.([]interface {}) {
+			for _, d := range v.([]interface{}) {
 				slc = append(slc, fmt.Sprintf("%s", d))
 			}
 			metrics = append(metrics, fmt.Sprintf("%s %s", realPrefix, strings.Join(slc, ",")))

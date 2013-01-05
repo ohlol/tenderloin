@@ -14,7 +14,7 @@ func main() {
 	var (
 		err error
 	)
-	
+
 	_, err = flags.Parse(&opts)
 	if err != nil {
 		os.Exit(1)
