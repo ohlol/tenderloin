@@ -1,5 +1,5 @@
-BINARIES = bin/tl
-SUBDIRS = tl
+BINARIES = bin/tco bin/tl
+SUBDIRS = tco tl
 
 .PHONY: all build distclean $(SUBDIRS)
 

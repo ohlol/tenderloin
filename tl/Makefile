@@ -1,12 +1,12 @@
-GOFILES= \
+BINARY = ../bin/tl
+GOFILES = \
 	metrics.go \
 	server.go \
 	web.go
-TARGET = tl
 
-.PHONY: all
+.PHONY: all $(BINARY)
 
 all: tl
 
-tl: $(GOFILES)
-	go build -o ../bin/tl
+tl: $(GOFILES) $(BINARY)
+	go build -o $(BINARY)

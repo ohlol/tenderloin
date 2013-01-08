@@ -66,12 +66,11 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.Unmarshal([]byte(r.FormValue("tags")), &tags)
 
-	err = json.Unmarshal([]byte(r.FormValue("data")), &data)
-	if err == nil {
+	if err = json.Unmarshal([]byte(r.FormValue("data")), &data); err != nil {
+		log.Printf("failed to unmarshal plugin data for %s: %s", pluginName, err)
+	} else {
 		data["received_at"] = fmt.Sprintf("%d", time.Now().Unix())
 		MetricsData[pluginName] = Plugin{name: pluginName, data: data, tags: tags}
-	} else {
-		log.Printf("Failed to unmarshal plugin data for %s!", pluginName)
 	}
 }
 
@@ -119,7 +118,7 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "%s\n", metric)
 		}
 	} else {
-		http.Error(w, "No plugins matched.", 404)
+		http.Error(w, "no plugins matched.", 404)
 	}
 }
 
@@ -142,7 +141,7 @@ func (s1 *Set) Subset(s2 Set) []string {
 func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error {
 	http.HandleFunc("/", webHandler)
 	http.HandleFunc("/_send", messageHandler)
-	log.Printf("Starting server up on %s", listenAddr)
+	log.Printf("starting server up on %s", listenAddr)
 
 	return http.ListenAndServe(listenAddr, Log(http.DefaultServeMux))
 }
