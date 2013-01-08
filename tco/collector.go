@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jessevdk/go-flags"
-	"github.com/ohlol/go-graphite"
+	"github.com/ohlol/graphite.go"
 	"io/ioutil"
 	"log"
 	"net/http"
