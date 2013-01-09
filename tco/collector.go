@@ -16,22 +16,28 @@ import (
 func fetchData(url string) (error, []byte) {
 	var (
 		data []byte
-		err  error
+		err error
+		err2 error
 		res  *http.Response
 	)
 
-	if res, err = http.Get(url); err != nil {
-		return errors.New(fmt.Sprintf("problem querying tenderloin: %s", err)), data
-	}
-	if res.StatusCode != 200 {
-		return errors.New("problem querying tenderloin: no plugins matched"), data
-	}
+	err = func() error {
+		if res, err2 = http.Get(url); err2 != nil {
+			return err2
+		}
 
-	if data, err = ioutil.ReadAll(res.Body); err != nil {
-		return errors.New(fmt.Sprintf("problem querying tenderloin: %s", err)), data
-	}
+		if res.StatusCode != 200 {
+			return errors.New("problem querying tenderloin: no plugins matched")
+		}
 
-	return nil, data
+		if data, err2 = ioutil.ReadAll(res.Body); err2 != nil {
+			return err2
+		}
+
+		return nil
+	}()
+
+	return err, data
 }
 
 func parseTenderloinOutput(prefix, data string) []graphite.Metric {
