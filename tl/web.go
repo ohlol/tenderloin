@@ -122,6 +122,12 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics *MetricsData) {
 	}
 }
 
+func updateMetrics(updates chan Plugin, metrics *MetricsData) {
+	for plugin := range updates {
+		metrics.data[plugin.name] = plugin
+	}
+}
+
 func (s1 *Set) Subset(s2 Set) []string {
 	var (
 		subset Set
@@ -145,7 +151,7 @@ func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error 
 
 	metrics.data = make(map[string]Plugin)
 	updates := make(chan Plugin)
-	go updateFunc(updates, &metrics)
+	go updateMetrics(updates, &metrics)
 
 	// The handler wrappers are so simple it seems just as simple to use closures.
 	webHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
@@ -160,10 +166,4 @@ func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error 
 	log.Printf("starting server up on %s", listenAddr)
 
 	return http.ListenAndServe(listenAddr, Log(http.DefaultServeMux))
-}
-
-func updateFunc(updates chan Plugin, metrics *MetricsData) {
-	for plugin := range updates {
-		metrics.data[plugin.name] = plugin
-	}
 }
