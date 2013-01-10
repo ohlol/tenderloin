@@ -21,9 +21,9 @@ type Set []string
 
 type TenderloinWebServer struct{}
 
-var (
-	MetricsData = map[string]Plugin{}
-)
+type MetricsData struct {
+	data map[string]Plugin
+}
 
 func Log(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,10 +32,10 @@ func Log(handler http.Handler) http.Handler {
 	})
 }
 
-func filterByTags(tags Set) []Plugin {
+func filterByTags(tags Set, metrics MetricsData) []Plugin {
 	plugins := []Plugin{}
 
-	for _, m := range MetricsData {
+	for _, m := range metrics.data {
 		if t := tags.Subset(m.tags); len(t) > 0 {
 			plugins = append(plugins, m)
 		}
@@ -55,7 +55,7 @@ func formatFqdn() string {
 	return strings.Join(splitName, ".")
 }
 
-func messageHandler(w http.ResponseWriter, r *http.Request) {
+func messageHandler(w http.ResponseWriter, r *http.Request, updater chan Plugin) {
 	var (
 		data MetricsMap
 		err  error
@@ -70,7 +70,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("failed to unmarshal plugin data for %s: %s", pluginName, err)
 	} else {
 		data["received_at"] = fmt.Sprintf("%d", time.Now().Unix())
-		MetricsData[pluginName] = Plugin{name: pluginName, data: data, tags: tags}
+		updater <- Plugin{name: pluginName, data: data, tags: tags}
 	}
 }
 
@@ -86,7 +86,7 @@ func prefixed(prefix string, val string) string {
 	return realPrefix
 }
 
-func webHandler(w http.ResponseWriter, r *http.Request) {
+func webHandler(w http.ResponseWriter, r *http.Request, metrics *MetricsData) {
 	tags := []string{}
 	fqdn := formatFqdn()
 	tagsParam := r.FormValue("tags")
@@ -97,7 +97,7 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(tags) > 0 {
-		if filtered := filterByTags(tags); len(filtered) > 0 {
+		if filtered := filterByTags(tags, *metrics); len(filtered) > 0 {
 			for _, plugin := range filtered {
 				for _, pth := range plugin.data.ToPath(fqdn) {
 					paths = append(paths, pth)
@@ -105,7 +105,7 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		for _, plugin := range MetricsData {
+		for _, plugin := range metrics.data {
 			for _, pth := range plugin.data.ToPath(fqdn) {
 				paths = append(paths, pth)
 			}
@@ -139,9 +139,31 @@ func (s1 *Set) Subset(s2 Set) []string {
 }
 
 func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error {
-	http.HandleFunc("/", webHandler)
-	http.HandleFunc("/_send", messageHandler)
+	var (
+		metrics MetricsData
+	)
+
+	metrics.data = make(map[string]Plugin)
+	updates := make(chan Plugin)
+	go updateFunc(updates, &metrics)
+
+	// The handler wrappers are so simple it seems just as simple to use closures.
+	webHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		webHandler(w, r, &metrics)
+	}
+	messageHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		messageHandler(w, r, updates)
+	}
+
+	http.HandleFunc("/", webHandlerFunc)
+	http.HandleFunc("/_send", messageHandlerFunc)
 	log.Printf("starting server up on %s", listenAddr)
 
 	return http.ListenAndServe(listenAddr, Log(http.DefaultServeMux))
+}
+
+func updateFunc(updates chan Plugin, metrics *MetricsData) {
+	for plugin := range updates {
+		metrics.data[plugin.name] = plugin
+	}
 }
