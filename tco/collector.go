@@ -16,7 +16,7 @@ import (
 func fetchData(url string) (error, []byte) {
 	var (
 		data []byte
-		err error
+		err  error
 		err2 error
 		res  *http.Response
 	)
