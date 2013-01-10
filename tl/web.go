@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+type MetricsData struct {
+	data map[string]Plugin
+}
+
 type Plugin struct {
 	data MetricsMap
 	name string
@@ -20,10 +24,6 @@ type Plugin struct {
 type Set []string
 
 type TenderloinWebServer struct{}
-
-type MetricsData struct {
-	data map[string]Plugin
-}
 
 func Log(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +86,12 @@ func prefixed(prefix string, val string) string {
 	return realPrefix
 }
 
+func updateMetrics(updates chan Plugin, metrics *MetricsData) {
+	for plugin := range updates {
+		metrics.data[plugin.name] = plugin
+	}
+}
+
 func webHandler(w http.ResponseWriter, r *http.Request, metrics *MetricsData) {
 	tags := []string{}
 	fqdn := formatFqdn()
@@ -119,12 +125,6 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics *MetricsData) {
 		}
 	} else {
 		http.Error(w, "no plugins matched.", 404)
-	}
-}
-
-func updateMetrics(updates chan Plugin, metrics *MetricsData) {
-	for plugin := range updates {
-		metrics.data[plugin.name] = plugin
 	}
 }
 
