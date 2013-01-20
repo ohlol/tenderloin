@@ -91,14 +91,14 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics MetricsData) {
 	if len(tags) > 0 {
 		if filtered := filterByTags(tags, metrics); len(filtered) > 0 {
 			for _, plugin := range filtered {
-				for _, pth := range plugin.data.ToPath("") {
+				for _, pth := range plugin.data.ToPath(plugin.name) {
 					paths = append(paths, pth)
 				}
 			}
 		}
 	} else {
 		for _, plugin := range metrics.data {
-			for _, pth := range plugin.data.ToPath("") {
+			for _, pth := range plugin.data.ToPath(plugin.name) {
 				paths = append(paths, pth)
 			}
 		}
