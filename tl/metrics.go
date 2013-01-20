@@ -12,6 +12,18 @@ type Metrics interface {
 	ToPath()
 }
 
+func prefixed(prefix string, val string) string {
+	realPrefix := ""
+
+	if len(prefix) > 0 {
+		realPrefix = fmt.Sprintf("%s.%s", prefix, val)
+	} else {
+		realPrefix = val
+	}
+
+	return realPrefix
+}
+
 func (mMap *MetricsMap) ToPath(prefix string) []string {
 	var (
 		realPrefix string

@@ -40,22 +40,32 @@ func fetchData(url string) (error, []byte) {
 	return err, data
 }
 
+func formatFqdn() string {
+	fqdn, _ := os.Hostname()
+	splitName := strings.Split(fqdn, ".")
+
+	for i, j := 0, len(splitName)-1; i < j; i, j = i+1, j-1 {
+		splitName[i], splitName[j] = splitName[j], splitName[i]
+	}
+
+	return strings.Join(splitName, ".")
+}
+
 func parseTenderloinOutput(prefix, data string) []graphite.Metric {
 	var (
 		key        string
 		metrics    []graphite.Metric
 		metricLine []string
-		val        string
 	)
 
+	fqdn := formatFqdn()
 	now := time.Now().Unix()
 
 	for _, line := range strings.Split(data, "\n") {
 		if line != "" {
 			metricLine = strings.SplitN(line, " ", 2)
-			key = strings.Join([]string{prefix, metricLine[0]}, ".")
-			val = metricLine[1]
-			metrics = append(metrics, graphite.Metric{Name: key, Value: val, Timestamp: now})
+			key = strings.Join([]string{prefix, fqdn, metricLine[0]}, ".")
+			metrics = append(metrics, graphite.Metric{Name: key, Value: metricLine[1], Timestamp: now})
 		}
 	}
 

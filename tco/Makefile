@@ -6,5 +6,4 @@ GOFILES = collector.go
 all: tco
 
 tco: $(GOFILES) $(BINARY)
-	@echo $(GOPATH)
 	go build -o $(BINARY)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -74,18 +73,6 @@ func messageHandler(w http.ResponseWriter, r *http.Request, updater chan Plugin)
 	}
 }
 
-func prefixed(prefix string, val string) string {
-	realPrefix := ""
-
-	if len(prefix) > 0 {
-		realPrefix = fmt.Sprintf("%s.%s", prefix, val)
-	} else {
-		realPrefix = val
-	}
-
-	return realPrefix
-}
-
 func updateMetrics(updates chan Plugin, metrics *MetricsData) {
 	for plugin := range updates {
 		metrics.data[plugin.name] = plugin
@@ -94,7 +81,6 @@ func updateMetrics(updates chan Plugin, metrics *MetricsData) {
 
 func webHandler(w http.ResponseWriter, r *http.Request, metrics MetricsData) {
 	tags := []string{}
-	fqdn := formatFqdn()
 	tagsParam := r.FormValue("tags")
 	paths := []string{}
 
@@ -105,14 +91,14 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics MetricsData) {
 	if len(tags) > 0 {
 		if filtered := filterByTags(tags, metrics); len(filtered) > 0 {
 			for _, plugin := range filtered {
-				for _, pth := range plugin.data.ToPath(fqdn) {
+				for _, pth := range plugin.data.ToPath("") {
 					paths = append(paths, pth)
 				}
 			}
 		}
 	} else {
 		for _, plugin := range metrics.data {
-			for _, pth := range plugin.data.ToPath(fqdn) {
+			for _, pth := range plugin.data.ToPath("") {
 				paths = append(paths, pth)
 			}
 		}
