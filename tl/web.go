@@ -92,7 +92,7 @@ func updateMetrics(updates chan Plugin, metrics *MetricsData) {
 	}
 }
 
-func webHandler(w http.ResponseWriter, r *http.Request, metrics *MetricsData) {
+func webHandler(w http.ResponseWriter, r *http.Request, metrics MetricsData) {
 	tags := []string{}
 	fqdn := formatFqdn()
 	tagsParam := r.FormValue("tags")
@@ -103,7 +103,7 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics *MetricsData) {
 	}
 
 	if len(tags) > 0 {
-		if filtered := filterByTags(tags, *metrics); len(filtered) > 0 {
+		if filtered := filterByTags(tags, metrics); len(filtered) > 0 {
 			for _, plugin := range filtered {
 				for _, pth := range plugin.data.ToPath(fqdn) {
 					paths = append(paths, pth)
@@ -155,7 +155,7 @@ func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error 
 
 	// The handler wrappers are so simple it seems just as simple to use closures.
 	webHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
-		webHandler(w, r, &metrics)
+		webHandler(w, r, metrics)
 	}
 	messageHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
 		messageHandler(w, r, updates)
