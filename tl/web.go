@@ -47,9 +47,9 @@ func filterByTags(tags Set, metrics MetricsData) []Plugin {
 
 func messageHandler(w http.ResponseWriter, r *http.Request, updater chan Plugin) {
 	var (
-		body []byte
+		body   []byte
 		plugin Plugin
-		err  error
+		err    error
 	)
 
 	if body, err = ioutil.ReadAll(r.Body); err != nil {
@@ -58,12 +58,12 @@ func messageHandler(w http.ResponseWriter, r *http.Request, updater chan Plugin)
 		if err = json.Unmarshal(body, &plugin); err != nil {
 			log.Printf("failed to unmarshal plugin data: %s", err)
 		} else {
-			if (len(plugin.Name) == 0) {
+			if len(plugin.Name) == 0 {
 				log.Printf("no plugin name specified")
 				return
 			}
 
-			if (plugin.Interval <= 0) {
+			if plugin.Interval <= 0 {
 				plugin.Interval = 60
 			}
 
