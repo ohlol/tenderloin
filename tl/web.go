@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"sort"
@@ -15,9 +16,10 @@ type MetricsData struct {
 }
 
 type Plugin struct {
-	data MetricsMap
-	name string
-	tags Set
+	Data     MetricsMap
+	Interval int
+	Name     string
+	Tags     Set
 }
 
 type Set []string
@@ -35,7 +37,7 @@ func filterByTags(tags Set, metrics MetricsData) []Plugin {
 	plugins := []Plugin{}
 
 	for _, m := range metrics.data {
-		if t := tags.Subset(m.tags); len(t) > 0 {
+		if t := tags.Subset(m.Tags); len(t) > 0 {
 			plugins = append(plugins, m)
 		}
 	}
@@ -43,39 +45,38 @@ func filterByTags(tags Set, metrics MetricsData) []Plugin {
 	return plugins
 }
 
-func formatFqdn() string {
-	fqdn, _ := os.Hostname()
-	splitName := strings.Split(fqdn, ".")
-
-	for i, j := 0, len(splitName)-1; i < j; i, j = i+1, j-1 {
-		splitName[i], splitName[j] = splitName[j], splitName[i]
-	}
-
-	return strings.Join(splitName, ".")
-}
-
 func messageHandler(w http.ResponseWriter, r *http.Request, updater chan Plugin) {
 	var (
-		data MetricsMap
+		body []byte
+		plugin Plugin
 		err  error
-		tags Set
 	)
 
-	pluginName := r.FormValue("plugin_id")
-
-	json.Unmarshal([]byte(r.FormValue("tags")), &tags)
-
-	if err = json.Unmarshal([]byte(r.FormValue("data")), &data); err != nil {
-		log.Printf("failed to unmarshal plugin data for %s: %s", pluginName, err)
+	if body, err = ioutil.ReadAll(r.Body); err != nil {
+		log.Printf("couldn't read request body")
 	} else {
-		data["received_at"] = fmt.Sprintf("%d", time.Now().Unix())
-		updater <- Plugin{name: pluginName, data: data, tags: tags}
+		if err = json.Unmarshal(body, &plugin); err != nil {
+			log.Printf("failed to unmarshal plugin data: %s", err)
+		} else {
+			if (len(plugin.Name) == 0) {
+				log.Printf("no plugin name specified")
+				return
+			}
+
+			if (plugin.Interval <= 0) {
+				plugin.Interval = 60
+			}
+
+			plugin.Tags = append(plugin.Tags, plugin.Name)
+			plugin.Data["received_at"] = fmt.Sprintf("%d", time.Now().Unix())
+			updater <- plugin
+		}
 	}
 }
 
 func updateMetrics(updates chan Plugin, metrics *MetricsData) {
 	for plugin := range updates {
-		metrics.data[plugin.name] = plugin
+		metrics.data[plugin.Name] = plugin
 	}
 }
 
@@ -91,14 +92,14 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics MetricsData) {
 	if len(tags) > 0 {
 		if filtered := filterByTags(tags, metrics); len(filtered) > 0 {
 			for _, plugin := range filtered {
-				for _, pth := range plugin.data.ToPath(plugin.name) {
+				for _, pth := range plugin.Data.ToPath(plugin.Name) {
 					paths = append(paths, pth)
 				}
 			}
 		}
 	} else {
 		for _, plugin := range metrics.data {
-			for _, pth := range plugin.data.ToPath(plugin.name) {
+			for _, pth := range plugin.Data.ToPath(plugin.Name) {
 				paths = append(paths, pth)
 			}
 		}
@@ -149,6 +150,7 @@ func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error 
 
 	http.HandleFunc("/", webHandlerFunc)
 	http.HandleFunc("/_send", messageHandlerFunc)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	log.Printf("starting server up on %s", listenAddr)
 
 	return http.ListenAndServe(listenAddr, Log(http.DefaultServeMux))
