@@ -9,28 +9,28 @@ import (
 )
 
 type PollerRequest struct {
-	Command string
+	Command  string
 	Interval int
-	Tags Set
+	Tags     Set
 }
 
 type Connection struct {
-	ws *websocket.Conn
+	ws       *websocket.Conn
 	interval int
-	tags Set
-	send chan string
+	tags     Set
+	send     chan string
 }
 
 type ConnectionPool struct {
-	register chan *Connection
-	unregister chan *Connection
+	register    chan *Connection
+	unregister  chan *Connection
 	connections map[*Connection]bool
 }
 
 func (c *Connection) reader() {
 	for {
 		var (
-			msg PollerRequest
+			msg      PollerRequest
 			response struct {
 				Data string
 			}
@@ -87,10 +87,10 @@ func (c *Connection) writer(metrics MetricsData) {
 func (cp *ConnectionPool) run() {
 	for {
 		select {
-		case c := <- cp.register:
+		case c := <-cp.register:
 			log.Printf("registering: %#v", c)
 			cp.connections[c] = true
-		case c := <- cp.unregister:
+		case c := <-cp.unregister:
 			log.Printf("unregistering: %#v", c)
 			delete(cp.connections, c)
 			close(c.send)

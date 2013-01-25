@@ -143,7 +143,7 @@ func (s1 *Set) Subset(s2 Set) []string {
 func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error {
 	var (
 		metrics MetricsData
-		pool ConnectionPool
+		pool    ConnectionPool
 	)
 
 	metrics.Plugins = make(map[string]Plugin)
