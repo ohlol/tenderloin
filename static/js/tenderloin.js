@@ -1,110 +1,144 @@
 $(function() {
-    var allMetrics = {}
-      , chartSelectors = []
+    updater.start()
 
-    function Plugin(name) {
-        this.name = name
-        this.metrics = ko.observableArray()
-    }
-
-    function MetricsViewModel() {
-        var self = this
-          , metrics = {}
-          , plugins = []
-
-        self.plugins = ko.observableArray()
-
-        $.get("/?tags=graphite", function(data) {
-            $.map(data.split("\n"), function(line) {
-                if (line.length > 0) {
-                    var mLine = line.split(" ", 2)
-                    var pluginMetric = mLine[0].split(".")
-                    var plugin = pluginMetric.shift()
-                    var metric = pluginMetric.join(".")
-                    var selector = ["chart", plugin, metric].join("-")
-
-                    if (!metrics.hasOwnProperty(plugin)) {
-                        metrics[plugin] = []
-                    }
-
-                    if (metric.indexOf("received_at", metric.length - "received_at".length) === -1) {
-                        var val = parseFloat(mLine[1])
-                        if (val !== NaN) {
-                            metrics[plugin].push([
-                                metric,
-                                selector,
-                                Array(20).join("0,") + val
-                            ])
-                        }
-                    }
-                }
-            })
-
-            for (var key in metrics) {
-                var plugin = new Plugin(key)
-                plugin.metrics = metrics[key]
-                plugins.push(plugin)
-            }
-
-            self.plugins(plugins)
-        })
-    }
-
-    setInterval(function() {
-        var metrics = {}
-
-        $.get("/?tags=graphite", function(data) {
-            var metrics = {}
-
-            $.map(data.split("\n"), function(line) {
-                if (line.length > 0) {
-                    var mLine = line.split(" ", 2)
-                    var pluginMetric = mLine[0].split(".")
-                    var plugin = pluginMetric.shift()
-                    var metric = pluginMetric.join(".")
-
-                    if (!metrics.hasOwnProperty(plugin)) {
-                        metrics[plugin] = {}
-                    }
-
-                    if (metric !== "received_at") {
-                        var val = parseFloat(mLine[1])
-                        if (val !== NaN) {
-                            metrics[plugin][metric] = val
-                        }
-                    }
-                }
-            })
-
-            for (var i = 0; i < chartSelectors.length; i++) {
-                var id = $(chartSelectors[i]).attr("id").split("-")
-                  , values = $(chartSelectors[i]).text().split(",")
-
-                if (metrics.hasOwnProperty(id[1])) {
-                    if (metrics[id[1]].hasOwnProperty(id[2])) {
-                        values.shift()
-
-                        var val = parseFloat(metrics[id[1]][id[2]])
-                        values.push(metrics[id[1]][id[2]])
-                        $(chartSelectors[i])
-                            .text(values.join(","))
-                            .change()
-                    }
-                }
-            }
-        })
-
-    }, 1000)
-
-    ko.applyBindings(new MetricsViewModel())
-
-    ko.bindingHandlers.renderChart = {
-        init: function(element) {
-            $(element).peity("line", { width: 250, height: 20 })
-            chartSelectors.push(element)
-        }/*,
-        update: function(element) {
-            $(element).peity("bar", { width: 250, height: 20 })
-        }*/
-    }
+    // have to do this here due to the tabs
+    d3.select(".tab-content").call(function(div){
+        div.insert("div")
+            .attr("class", "rule")
+            .call(context.rule())
+    })
 })
+
+var contexts = {}
+
+/*
+ * Each metric is a regex to match output from tenderloin.
+ * Tabs are created based on the second field (dot-delimited).
+ * So in the default metrics, you get four tabs.
+ */
+var metrics = [
+        "base.cpu.cpu(?!.*(idle|softirq))",
+        "base.diskstats.*",
+        "base.loadavg.*term",
+        "base.meminfo.(mem|swap)(free|used)"
+    ]
+
+function getOrElseUpdate(map, k, callback) {
+    var v = map[k]
+    if (v !== undefined) return v
+    return map[k] = callback()
+}
+
+var updater = {
+    socket: null,
+    start: function() {
+        var url = "ws://" + location.host + "/_poller"
+
+        if ("WebSocket" in window) {
+            updater.socket = new WebSocket(url)
+        } else {
+            updater.socket = new MozWebSocket(url)
+        }
+
+        var registering = setInterval(function(){
+            updater.socket.send(JSON.stringify({
+                command:"filter",
+                tags:["graphite"],
+                interval:1
+            }))
+        }, 1000)
+
+        updater.socket.onmessage = function(event) {
+            parsed = JSON.parse(event.data)
+            if (parsed.hasOwnProperty("Data")) {
+                switch(parsed["Data"]) {
+                case "registered":
+                    clearInterval(registering)
+                    break
+                default:
+                    var metric = parsed["Data"]
+                        , name = metric[0]
+                        , value = metric[1]
+                        , timestamp = metric[2]
+
+                    for(var i = 0; i < metrics.length; i++) {
+                        if (name.match(metrics[i])) {
+                            var tab = name.split(".", 2)[1]
+                                , selector = "#"+tab+" .tab-data"
+                                , axis = d3.select("#"+tab+" .axis")
+                                , ctx = getOrElseUpdate(contexts, name, function(){
+                                    var x = tenderloinContext(name)
+                                    setup_context(selector, x.data_context)
+                                    return x
+                                })
+
+                            if (axis.empty()) {
+                                d3.select(selector).call(function(div){
+                                    div.insert("div", ":first-child")
+                                        .attr("class", "axis")
+                                        .call(context.axis().orient("top"))
+                                })
+                            }
+
+                            ctx.update(timestamp, +value)
+                        }
+                    }
+
+                    break
+                }
+            }
+        }
+    }
+}
+
+var context = cubism.context()
+    .serverDelay(0)
+    .clientDelay(0)
+    .step(1e3)
+    .size(940)
+
+context.on("focus", function(i) {
+  d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px")
+})
+
+function tenderloinContext(name) {
+    var values = {}
+        , max = 0
+        , counter = 0
+        , dc = context.metric(function(start, stop, step, callback) {
+            var rv = []
+
+            start = +start, stop = +stop
+
+            while (start < stop) {
+                start += step
+                var possible_v = values[start]
+                if (possible_v !== undefined)
+                    rv.push(possible_v)
+            }
+
+            callback(null, rv)
+        }, name + "")
+
+    return {
+        data_context: dc,
+        update: function(timestamp, value) {
+            values[timestamp] = value
+            counter += 1
+            if (counter > 940) delete values[timestamp - 940 * 1000]
+        }
+    }
+}
+
+function setup_context(selector, data_context) {
+    d3.select(selector).call(function(div) {
+        div.datum(data_context)
+        div.append("div")
+            .attr("class", "horizon")
+            .call(context.horizon()
+                  .height(30)
+                  .colors(["#FFFFCC", "#FFEDA0", "#FED976", "#FEB24C", "#FD8D3C", "#FC4E2A", "#E31A1C", "#BD0026", "#800026"]))
+    })
+
+    $(".tab-data .horizon").tsort()
+}

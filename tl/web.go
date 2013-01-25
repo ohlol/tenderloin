@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,7 +13,7 @@ import (
 )
 
 type MetricsData struct {
-	data map[string]Plugin
+	Plugins map[string]Plugin
 }
 
 type Plugin struct {
@@ -36,9 +37,9 @@ func Log(handler http.Handler) http.Handler {
 func filterByTags(tags Set, metrics MetricsData) []Plugin {
 	plugins := []Plugin{}
 
-	for _, m := range metrics.data {
-		if t := tags.Subset(m.Tags); len(t) > 0 {
-			plugins = append(plugins, m)
+	for _, plugin := range metrics.Plugins {
+		if t := tags.Subset(plugin.Tags); len(t) > 0 {
+			plugins = append(plugins, plugin)
 		}
 	}
 
@@ -74,9 +75,17 @@ func messageHandler(w http.ResponseWriter, r *http.Request, updater chan Plugin)
 	}
 }
 
+func pollerHandler(ws *websocket.Conn, pool *ConnectionPool, metrics MetricsData) {
+	c := &Connection{send: make(chan string), ws: ws, interval: 1}
+	pool.register <- c
+	defer func() { pool.unregister <- c }()
+	go c.writer(metrics)
+	c.reader()
+}
+
 func updateMetrics(updates chan Plugin, metrics *MetricsData) {
 	for plugin := range updates {
-		metrics.data[plugin.Name] = plugin
+		metrics.Plugins[plugin.Name] = plugin
 	}
 }
 
@@ -98,7 +107,7 @@ func webHandler(w http.ResponseWriter, r *http.Request, metrics MetricsData) {
 			}
 		}
 	} else {
-		for _, plugin := range metrics.data {
+		for _, plugin := range metrics.Plugins {
 			for _, pth := range plugin.Data.ToPath(plugin.Name) {
 				paths = append(paths, pth)
 			}
@@ -134,23 +143,37 @@ func (s1 *Set) Subset(s2 Set) []string {
 func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error {
 	var (
 		metrics MetricsData
+		pool ConnectionPool
 	)
 
-	metrics.data = make(map[string]Plugin)
+	metrics.Plugins = make(map[string]Plugin)
 	updates := make(chan Plugin)
 	go updateMetrics(updates, &metrics)
 
+	pool.register = make(chan *Connection)
+	pool.unregister = make(chan *Connection)
+	pool.connections = make(map[*Connection]bool)
+	go pool.run()
+
 	// The handler wrappers are so simple it seems just as simple to use closures.
-	webHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
-		webHandler(w, r, metrics)
+	graphHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "graphs/index.html")
 	}
 	messageHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
 		messageHandler(w, r, updates)
 	}
+	pollerHandlerFunc := func(ws *websocket.Conn) {
+		pollerHandler(ws, &pool, metrics)
+	}
+	webHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		webHandler(w, r, metrics)
+	}
 
 	http.HandleFunc("/", webHandlerFunc)
 	http.HandleFunc("/_send", messageHandlerFunc)
+	http.Handle("/_poller", websocket.Handler(pollerHandlerFunc))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.HandleFunc("/graphs", graphHandlerFunc)
 	log.Printf("starting server up on %s", listenAddr)
 
 	return http.ListenAndServe(listenAddr, Log(http.DefaultServeMux))

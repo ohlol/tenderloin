@@ -1,6 +1,7 @@
 BINARY = ../bin/tl
 GOFILES = \
 	metrics.go \
+	poller.go \
 	server.go \
 	web.go
 
