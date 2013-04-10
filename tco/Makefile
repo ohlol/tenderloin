@@ -6,4 +6,5 @@ GOFILES = collector.go
 all: tco
 
 tco: $(GOFILES) $(BINARY)
+	mkdir -p $(shell dirname $(BINARY))
 	go build -o $(BINARY)
