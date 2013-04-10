@@ -25,6 +25,7 @@ func fetchData(url string) (error, []byte) {
 		if res, err2 = http.Get(url); err2 != nil {
 			return err2
 		}
+		defer res.Body.Close()
 
 		if res.StatusCode != 200 {
 			return errors.New("problem querying tenderloin: no plugins matched")
