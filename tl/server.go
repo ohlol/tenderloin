@@ -11,6 +11,7 @@ func main() {
 		err  error
 		opts struct {
 			ListenAddr string `short:"l" long:"listen" default:"0.0.0.0:50000" description:"Listen on this address"`
+			Root string `short:"r" long:"root" default:"/usr/share/tenderloin" description:"Document root for static files"`
 		}
 	)
 
@@ -20,7 +21,7 @@ func main() {
 
 	tenderloinWeb := new(TenderloinWebServer)
 
-	if err = tenderloinWeb.RunServer(opts.ListenAddr); err != nil {
+	if err = tenderloinWeb.RunServer(opts.ListenAddr, opts.Root); err != nil {
 		log.Fatal("could not bind to specified address and/or port")
 	}
 }

@@ -140,7 +140,7 @@ func (s1 *Set) Subset(s2 Set) []string {
 	return subset
 }
 
-func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error {
+func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string, docRoot string) error {
 	var (
 		metrics MetricsData
 		pool    ConnectionPool
@@ -157,7 +157,7 @@ func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error 
 
 	// The handler wrappers are so simple it seems just as simple to use closures.
 	graphHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "graphs/index.html")
+		http.ServeFile(w, r, fmt.Sprintf("%s/graphs/index.html", docRoot))
 	}
 	messageHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
 		messageHandler(w, r, updates)
@@ -172,7 +172,7 @@ func (tenderloinServer *TenderloinWebServer) RunServer(listenAddr string) error 
 	http.HandleFunc("/", webHandlerFunc)
 	http.HandleFunc("/_send", messageHandlerFunc)
 	http.Handle("/_poller", websocket.Handler(pollerHandlerFunc))
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(fmt.Sprintf("%s/static", docRoot)))))
 	http.HandleFunc("/graphs", graphHandlerFunc)
 	log.Printf("starting server up on %s", listenAddr)
 
