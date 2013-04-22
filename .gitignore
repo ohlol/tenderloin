@@ -1,3 +1,4 @@
 _go
 bin
 _install
+*.deb
