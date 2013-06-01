@@ -5,9 +5,10 @@ GOFILES = \
 	server.go \
 	web.go
 
-.PHONY: all $(BINARY)
+.PHONY: all
 
-all: tl
+all: $(BINARY)
 
-tl: $(GOFILES) $(BINARY)
+$(BINARY): $(GOFILES)
+	mkdir -p $(shell dirname $(BINARY))
 	go build -o $(BINARY)

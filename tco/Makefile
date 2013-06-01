@@ -1,10 +1,10 @@
 BINARY = ../bin/tco
 GOFILES = collector.go
 
-.PHONY: all $(BINARY)
+.PHONY: all
 
-all: tco
+all: $(BINARY)
 
-tco: $(GOFILES) $(BINARY)
+$(BINARY): $(GOFILES)
 	mkdir -p $(shell dirname $(BINARY))
 	go build -o $(BINARY)
