@@ -1,7 +1,7 @@
 NAME = tenderloin
 BINARIES = bin/tco bin/tl
 SUBDIRS = tco tl
-VERSION = 0.3.2
+VERSION = 0.3.4
 ITERATION = 1
 GOPATH = $(PWD)/_go
 FPMDIR = $(PWD)/_install
